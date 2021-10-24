@@ -1,0 +1,42 @@
+---
+title: "Homework APIs"
+author: "Shane Hylton"
+date: "10/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(httr)
+library(jsonlite)
+library(tidyjson)
+library(tidyverse)
+library(stringr)
+library(tidyr)
+library(dplyr)
+
+
+```
+
+## NYT Bestselling Books API
+I chose to work with the New York Times Bestseller List. I loaded the data into R using the api-key I requested, then I collected the raw data from the JSON data. I then took the raw data, selected the results subsection, and created a dataframe based on books, where the data is stored. From there, I performed some minor cleaning procedures to improve the appearance of the dataframe. 
+
+```{r}
+
+res <- GET("https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=YWPApnXSKkG5cM5GlzyWeNOLs6XNeHDP")
+
+raw <- jsonlite::fromJSON(unlist(rawToChar(res$content)))
+
+df <- data.frame(raw$results$books)
+dftrim <- subset(df, select = -c(4,5,14, 19:23))
+books <- dftrim %>% relocate(c("title", "author", "publisher"), .after = "weeks_on_list")
+
+books_quick <- subset(books, select = c(1:6))
+colnames(books_quick) <- c("rank", "prev_rank", "weeks_on_list", "title", "author", "publisher")
+books_quick
+```
+
+## Closing Thoughts
+
+The workflow for loading the JSON data into a dataframe was somewhat straightforward after taking the time to discover in which subsection the data was stored. Using APIs should enable me to collect up to date data from a variety of sources. The Books API alone has an immense amount of data to pull from, and just like a SQL relational database queries are the way to obtain relevant data. 
